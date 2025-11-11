@@ -53,3 +53,50 @@ def test_get_sessionmaker(mock_settings):
     engine = database.get_engine()
     SessionLocal = database.get_sessionmaker(engine)
     assert isinstance(SessionLocal, sessionmaker)
+
+
+    # Mock the SessionLocal to return a mock session
+    mock_session = MagicMock(spec=Session)
+    mock_sessionmaker = MagicMock(return_value=mock_session)
+    
+    with patch.object(database, 'SessionLocal', mock_sessionmaker):
+        # Call get_db and iterate through the generator
+        db_generator = database.get_db()
+        
+        # Get the yielded session
+        db = next(db_generator)
+        
+        # Verify we got the mock session
+        assert db is mock_session
+        
+        # Verify SessionLocal was called to create the session
+        mock_sessionmaker.assert_called_once()
+        
+        # Complete the generator to trigger the finally block
+        try:
+            next(db_generator)
+        except StopIteration:
+            pass
+        
+        # Verify the session was closed
+        mock_session.close.assert_called_once()
+
+    # Mock the SessionLocal to return a mock session
+    mock_session = MagicMock(spec=Session)
+    mock_sessionmaker = MagicMock(return_value=mock_session)
+    
+    with patch.object(database, 'SessionLocal', mock_sessionmaker):
+        db_generator = database.get_db()
+        
+        # Get the yielded session
+        db = next(db_generator)
+        assert db is mock_session
+        
+        # Simulate an exception by throwing an error into the generator
+        try:
+            db_generator.throw(Exception("Test exception"))
+        except Exception:
+            pass
+        
+        # Verify the session was still closed despite the exception
+        mock_session.close.assert_called_once()

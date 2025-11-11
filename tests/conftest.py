@@ -50,12 +50,20 @@ def create_fake_user() -> Dict[str, str]:
     Returns:
         A dict containing user fields with fake data.
     """
+        # Generate a password that meets PasswordMixin requirements
+    password = fake.password(
+        length=12,
+        special_chars=False,  # Avoid special chars to keep it simple
+        digits=True,
+        upper_case=True,
+        lower_case=True
+    )
     return {
         "first_name": fake.first_name(),
         "last_name": fake.last_name(),
         "email": fake.unique.email(),  # Ensure uniqueness where necessary
         "username": fake.unique.user_name(),
-        "password": fake.password(length=12)
+        "password_hash": User.hash_password(password)
     }
 
 @contextmanager

@@ -39,7 +39,6 @@ class UserCreate(UserBase, PasswordMixin):
     """Schema for user creation"""
     pass
 
-
 class UserLogin(PasswordMixin):
     """Schema for user login"""
     username: str = Field(

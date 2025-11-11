@@ -1,6 +1,6 @@
 # app/schemas/__init__.py
 
-from .base import UserBase, PasswordMixin, UserCreate, UserLogin
+from .base import UserBase, PasswordMixin, UserCreate
 from .user import UserResponse, Token, TokenData
 
 __all__ = [

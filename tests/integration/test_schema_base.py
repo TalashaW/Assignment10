@@ -110,3 +110,53 @@ def test_user_login_invalid_password():
     with pytest.raises(ValidationError):
         UserLogin(**data)
 
+
+def test_password_mixin_five_characters():
+    """Test PasswordMixin with 5 characters (just under minimum)."""
+    data = {"password": "Pas12"}
+    with pytest.raises(ValueError, match="Password must be at least 6 characters long"):
+        PasswordMixin(**data)
+
+
+def test_password_mixin_six_characters_all_requirements():
+    """Test PasswordMixin with exactly 6 characters meeting all requirements."""
+    data = {"password": "Pass12"}
+    password_mixin = PasswordMixin(**data)
+    assert password_mixin.password == "Pass12"
+
+
+def test_password_mixin_only_lowercase_and_digits():
+    """Test PasswordMixin with lowercase and digits but no uppercase."""
+    data = {"password": "password123"}
+    with pytest.raises(ValueError, match="Password must contain at least one uppercase letter"):
+        PasswordMixin(**data)
+
+
+def test_password_mixin_only_uppercase_and_digits():
+    """Test PasswordMixin with uppercase and digits but no lowercase."""
+    data = {"password": "PASSWORD123"}
+    with pytest.raises(ValueError, match="Password must contain at least one lowercase letter"):
+        PasswordMixin(**data)
+
+
+def test_password_mixin_only_letters():
+    """Test PasswordMixin with only letters (no digits)."""
+    data = {"password": "PasswordOnly"}
+    with pytest.raises(ValueError, match="Password must contain at least one digit"):
+        PasswordMixin(**data)
+
+
+def test_password_mixin_max_length():
+    """Test PasswordMixin with maximum allowed length (128 characters)."""
+    long_password = "A" * 64 + "a" * 63 + "1"  # 128 chars with uppercase, lowercase, digit
+    data = {"password": long_password}
+    password_mixin = PasswordMixin(**data)
+    assert len(password_mixin.password) == 128
+
+
+def test_password_mixin_exceeds_max_length():
+    """Test PasswordMixin with password exceeding max length."""
+    too_long_password = "A" * 129
+    data = {"password": too_long_password}
+    with pytest.raises(ValidationError):
+        PasswordMixin(**data)
